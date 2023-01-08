@@ -31,7 +31,22 @@ export default function Home() {
   };
 
 
-
+  const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  const stripePromise = loadStripe(publishableKey);
+  const createCheckOutSession = async () => {
+   
+    const stripe = await stripePromise;
+    const checkoutSession = await axios.post("/api/create-stripe-session", {
+      item: item,
+    });
+    const result = await stripe.redirectToCheckout({
+      sessionId: checkoutSession.data.id,
+    });
+    if (result.error) {
+      alert(result.error.message);
+    }
+    
+  };
 
 
   return (
@@ -64,6 +79,8 @@ export default function Home() {
     </div>
     <p>Total: ${item.quantity * item.price}</p>
     <button
+      onClick={createCheckOutSession}
+
       disabled={item.quantity === 0}
       className='bg-blue-500 hover:bg-blue-600 text-white block w-full py-2 rounded mt-2 disabled:cursor-not-allowed disabled:bg-blue-100'
     >
